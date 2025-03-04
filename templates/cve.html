@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVE Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>CVE Details for {{ cve['cve']['id'] }}</h1>
+        <p><strong>Description:</strong> {{ cve['cve']['descriptions'][0].value }}</p>
+        <h2>CVSS V2 Metrics</h2>
+        <p><strong>Severity:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['baseSeverity'] }}</p>
+        <p><strong>Score:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['baseScore'] }}</p>
+        <p><strong>Vector String:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['vectorString'] }}</p>
+        <h3>Access</h3>
+        <table>
+            <tr>
+                <th>Access Vector</th>
+                <th>Access Compatibility</th>
+                <th>Authentication</th>
+                <th>Confidentiality Impact</th>
+                <th>Integrity Impact</th>
+                <th>Availability Impact</th>
+            </tr>
+            <tr>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['accessVector'] }}</td>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['accessComplexity'] }}</td>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['authentication'] }}</td>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['confidentialityImpact'] }}</td>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['integrityImpact'] }}</td>
+                <td>{{ cve['cve']['metrics']['cvssMetricV2'][0]['cvssData']['availabilityImpact'] }}</td>
+            </tr>
+        </table>
+        <h3>Scores:</h3>
+        <p><strong>Exploitability Score:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['exploitabilityScore'] }}</p>
+        <p><strong>Impact Score:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['impactScore'] }}</p>
+        <h2>CPE:</h2>
+        <table>
+            <tr>
+                <th>Criteria</th>
+                <th>Match Criteria ID</th>
+                <th>Vulnerable</th>
+            </tr>
+            {% for cpe in cve['cve']['configurations'][0]['nodes'] %}
+            <tr>
+                <td>{{ cpe['cpeMatch'][0]['criteria'] }}</td>
+                <td>{{ cpe['cpeMatch'][0]['matchCriteriaId'] }}</td>
+                <td>{{ 'Yes' if cpe['cpeMatch'][0]['vulnerable'] == True else "No" }}</td>
+            </tr>
+            {% endfor %}
+        </table> 
+    </div>
+</body>
+</html>

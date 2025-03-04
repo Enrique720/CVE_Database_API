@@ -3,6 +3,8 @@ import os
 import requests
 import time
 from pymongo import MongoClient
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
 
 CVES = {}
 
@@ -30,8 +32,6 @@ def parse_and_store_cve_data(results_per_page, db):
         if data:
             total_results = data.get("totalResults", 0)
 
-            print(f"Total Results: {total_results}, Start Index: {start_index}")
-
             cve_items = data.get("vulnerabilities", [])
 
             for item in cve_items:
@@ -47,9 +47,31 @@ def parse_and_store_cve_data(results_per_page, db):
         # Sleep to avoid overwhelming the API and getting us blocked.
         time.sleep(5)
 
+def update_database_periodically(db, initial_delay_minutes=0, interval_minutes=120):
+    scheduler = BackgroundScheduler()
+    
+    # Schedule the initial run
+    initial_run_time = datetime.now() + timedelta(minutes=initial_delay_minutes)
+    scheduler.add_job(parse_and_store_cve_data, 'date', run_date=initial_run_time, args=[2000, db])
+    
+    # Schedule subsequent runs
+    scheduler.add_job(parse_and_store_cve_data, 'interval', minutes=interval_minutes, args=[2000, db])
+    
+    scheduler.start()
+
 if __name__ == "__main__":
     client = MongoClient("mongodb://localhost:27017/")
     db = client.cve_database
 
-    parse_and_store_cve_data(results_per_page=2000, db=db)
+    # Schedule the initial run immediately and subsequent runs every 2 hours
+    update_database_periodically(db, initial_delay_minutes=0, interval_minutes=120)
+
+    # Keep the script running to allow the scheduler to run
+    try:
+        while True:
+            time.sleep(2)
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
+
 
