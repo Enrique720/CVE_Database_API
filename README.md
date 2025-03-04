@@ -98,3 +98,4 @@ The application will be available at `http://localhost:5000`.
 ## Notes
 
 1. The data is downloaded and processed on runtime due to Github limited size storage.
+2. The MongoDB daemon should be running in the following URI: mongodb://localhost:27017/
