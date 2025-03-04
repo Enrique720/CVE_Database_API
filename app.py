@@ -1,10 +1,10 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 from pymongo import MongoClient
-from bson import ObjectId
 from apscheduler.schedulers.background import BackgroundScheduler
 import time
 import requests
-from datetime import datetime, timedelta
+import re
+import datetime
 
 app = Flask(__name__)
 
@@ -55,11 +55,9 @@ def parse_and_store_cve_data(results_per_page, db):
 def update_database_periodically(db, initial_delay_minutes=0, interval_minutes=120):
     scheduler = BackgroundScheduler()
     
-    # Schedule the initial run
-    initial_run_time = datetime.now() + timedelta(minutes=initial_delay_minutes)
+    initial_run_time = datetime.datetime.now() + datetime.timedelta(minutes=initial_delay_minutes)
     scheduler.add_job(parse_and_store_cve_data, 'date', run_date=initial_run_time, args=[2000, db])
     
-    # Schedule subsequent runs
     scheduler.add_job(parse_and_store_cve_data, 'interval', minutes=interval_minutes, args=[2000, db])
     
     scheduler.start()
@@ -109,39 +107,63 @@ def get_cve_api(cve_id):
 # Filter CVEs by year
 @app.route('/api/cves/year/<cve_year>', methods=['GET'])
 def get_cve_by_year(cve_year):
-    cves = db.cves.find({"cve.id": {"$regex": f"CVE-{cve_year}-\\d+"}})
-    print(cves)
+    
+    if not re.fullmatch(r"\d{4}", cve_year):
+        return jsonify({"error": "Invalid year format. Use YYYY format only."}), 400
+
+    cves = db.cves.find({
+        "cve.published": {"$regex": f"^{cve_year}-"}
+    })
+
+    cves = db.cves.find({"cve.published": {"$regex": f"{cve_year}-"}})
+
     cve_list = []
     for cve in cves:
         cve_list.append(convert_objectid_to_str(cve))
+        
+    if not cve_list:
+        return jsonify({"message": "No CVEs found"}), 200
+    
     return jsonify(cve_list) 
 
 # Filter by baseScore
 @app.route('/api/cves/score/<base_score>', methods=['GET'])
 def get_cve_by_base_score(base_score):
-    cves = db.cves.find({"cve.baseScore": {"$gte": float(base_score)}})
+    cves = db.cves.find({
+        "cve.metrics.cvssMetricV2.0.cvssData.baseScore": {"$gte": float(base_score)}
+    })
     cve_list = []
     for cve in cves:
         cve_list.append(convert_objectid_to_str(cve))
+        
+    if not cve_list:
+        return jsonify({"message": "No CVEs found"}), 200
     return jsonify(cve_list)
 
 # Filter by modified in N days
 @app.route('/api/cves/modified/<days>', methods=['GET'])
 def get_cve_by_modified(days):
-    from datetime import datetime, timedelta
     days = int(days)
-    date_threshold = datetime.now() - timedelta(days=days)
-    cves = db.cves.find({"cve.modified": {"$gte": date_threshold}})
+    date_threshold = (datetime.datetime.utcnow() - datetime.timedelta(days=days)).isoformat(timespec="milliseconds") + "Z"
+
+    cves = db.cves.find({"cve.lastModified": {"$gte": date_threshold}})
     cve_list = []
     for cve in cves:
         cve_list.append(convert_objectid_to_str(cve))
+        
+    if not cve_list:
+        return jsonify({"message": "No CVEs found"}), 200   
     return jsonify(cve_list)
 
 @app.route('/')
+def home():
+    return redirect(url_for('index'))  # Redirects to /cves/list
+
+
+@app.route('/cves/list')
 def index():
     return render_template('index.html')
 
 if __name__ == "__main__":
     update_database_periodically(db, initial_delay_minutes=0, interval_minutes=120)
-
-    app.run(debug=True)
+    app.run(debug=False)
