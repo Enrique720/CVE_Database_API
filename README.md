@@ -1,6 +1,6 @@
 # NVD Assessment
 
-This project is a web application that fetches and displays CVE (Common Vulnerabilities and Exposures) data from the NVD (National Vulnerability Database) API. The application uses Flask for the backend and MongoDB for data storage. The data is periodically updated to ensure the latest CVE information is available.
+This project is a web application that fetches and displays CVE (Common Vulnerabilities and Exposures) data from the NVD (National Vulnerability Database) API. The application uses Flask for the backend and MongoDB for data storage. The data is periodically updated to ensure the latest CVE information is available. 
 
 ## Setup Instructions
 
@@ -94,6 +94,22 @@ The application will be available at `http://localhost:5000`.
 1. Open your web browser and navigate to `http://localhost:5000`.
 2. Use the provided API endpoints to fetch and display CVE data.
 3. The data is automatically updated every 2 hours to ensure the latest information is available.
+
+
+## Approach 
+
+The data is first downloaded from the NVD database API, using batches of 2000 a start index and results per page. This way we increase the starting index in every request to ensure that we collect the whole dataset. This process will take a while since it requests the NVD database every 5 seconds or we will get blocked from the API.
+
+## Screenshots
+
+The default table for the landing page:
+
+![Landing page](static/imgs/landing_page.png)
+
+The CVE information page:
+
+![CVE](static/imgs/CVE.png)
+
 
 ## Notes
 

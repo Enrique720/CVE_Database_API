@@ -38,17 +38,17 @@
         <p><strong>Exploitability Score:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['exploitabilityScore'] }}</p>
         <p><strong>Impact Score:</strong> {{ cve['cve']['metrics']['cvssMetricV2'][0]['impactScore'] }}</p>
         <h2>CPE:</h2>
-        <table>
+        <table class="mb-4">
             <tr>
                 <th>Criteria</th>
                 <th>Match Criteria ID</th>
                 <th>Vulnerable</th>
             </tr>
-            {% for cpe in cve['cve']['configurations'][0]['nodes'] %}
+            {% for cpe in cve['cve']['configurations'][0]['nodes'][0]['cpeMatch'] %}
             <tr>
-                <td>{{ cpe['cpeMatch'][0]['criteria'] }}</td>
-                <td>{{ cpe['cpeMatch'][0]['matchCriteriaId'] }}</td>
-                <td>{{ 'Yes' if cpe['cpeMatch'][0]['vulnerable'] == True else "No" }}</td>
+                <td>{{ cpe['criteria'] }}</td>
+                <td>{{ cpe['matchCriteriaId'] }}</td>
+                <td>{{ 'Yes' if cpe['vulnerable'] == True else "No" }}</td>
             </tr>
             {% endfor %}
         </table> 

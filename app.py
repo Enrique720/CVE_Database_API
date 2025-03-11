@@ -36,7 +36,6 @@ def parse_and_store_cve_data(results_per_page, db):
 
         if data:
             total_results = data.get("totalResults", 0)
-            print(total_results)
             cve_items = data.get("vulnerabilities", [])
 
             for item in cve_items:
