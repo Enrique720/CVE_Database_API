@@ -1,4 +1,4 @@
-# NVD Assessment
+# CVE Database API
 
 This project is a web application that fetches and displays CVE (Common Vulnerabilities and Exposures) data from the NVD (National Vulnerability Database) API. The application uses Flask for the backend and MongoDB for data storage. The data is periodically updated to ensure the latest CVE information is available. 
 
@@ -15,8 +15,8 @@ This project is a web application that fetches and displays CVE (Common Vulnerab
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/Enrique720/NVD_Assesment.git
-    cd NVD_Assesment
+    git clone https://github.com/Enrique720/CVE_Database_API.git
+    cd CVE_Database_API
     ```
 
 2. Create a virtual environment and activate it:
